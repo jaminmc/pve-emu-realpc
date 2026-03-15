@@ -14,26 +14,26 @@ jobs:
     env:
       TZ: Asia/Shanghai
     steps:
-      # Step 0: 安装git
+      # Step 0: Install git
       - name: 0-Install git
         run: |
           pacman -Syu --noconfirm
           pacman -Sy --noconfirm git
           
-      # Step 1: 检出代码
+      # Step 1: Checkout code
       - name: 1-checkout
         uses: actions/checkout@v3
         with:  
           submodules: 'true'
 
-      # Step 2: 安装构建所需的软件包
+      # Step 2: Install required build packages
       - name: 2-Install base package
         run: |
           uname -a
           pacman -Sy --noconfirm bc dosfstools iasl mtools nasm \
           python3 xorriso curl quilt base-devel git cmake make meson python-sphinx python-sphinx_rtd_theme
 
-      # Step 3: 构建 deb 文件
+      # Step 3: Build binary files
       - name: 3-Build
         run: |
           bash build_archlinux_qemu.sh
@@ -48,14 +48,14 @@ jobs:
           find ./ -name "*.aml" -exec cp {} ./artifacts/ \;
           
 
-      # Step 4: 上传工件
+      # Step 4: Upload artifacts
       - name: 4-Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: archlinux-qemu
           path: artifacts/*
 
-      # Step 5: 获取当前时间
+      # Step 5: Get current time
       - name: 5-Get current time
         id: current-time
         uses: josStorer/get-current-time@v2.0.2
@@ -63,7 +63,7 @@ jobs:
           format: YYYYMMDD-HHmmSS
           utcOffset: "+08:00"
 
-      # Step 6: 列出 artifacts 目录中的文件
+      # Step 6: List files in artifacts directory
       - name: 6-List artifacts directory
         run: |
           echo "Listing files in artifacts directory:"
@@ -71,7 +71,7 @@ jobs:
           cd artifacts
           
 
-      # Step 7: 创建 GitHub Release
+      # Step 7: Create GitHub Release
       - name: 7-Create GitHub Releases
         id: create_release
         uses: actions/create-release@v1
@@ -93,13 +93,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Step 8: 上传 deb 文件到 Release
+      # Step 8: Upload files to Release
       - name: 8-Upload each deb file to release
         run: |
           for file in ${GITHUB_WORKSPACE}/artifacts/*; do
             echo "Uploading $file"
             echo "file=$file" >> $GITHUB_ENV
-            # 调用上传动作
+            # Call upload action
             curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
               -H "Content-Type: application/octet-stream" \
               --data-binary @"$file" \

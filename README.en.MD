@@ -1,4 +1,4 @@
-Language [<a href="README.md">中文</a>] | [<a href="README.en.MD">English</a>] Thanks for https://github.com/mk990 translate.
+Language [<a href="README.md">Chinese</a>] | [<a href="README.en.MD">English</a>] Thanks for https://github.com/mk990 translate.
 
 PVE Debain Ubuntu ArchLinux virtual machine emulates a physical machine
 

@@ -1,94 +1,94 @@
-Language [<a href="README.md">中文</a>] | [<a href="README.en.MD">English</a>] Thanks for https://github.com/mk990 translate。
+Language [<a href="README.md">Chinese</a>] | [<a href="README.en.MD">English</a>] Thanks for https://github.com/mk990 translate.
 
-PVE Debain Ubuntu ArchLinux virtual machine emulates a physical machine （pve Debian Ubuntu ArchLinux虚拟机模拟真实机器）
+PVE Debian Ubuntu ArchLinux virtual machine emulates a physical machine
 
 
-20060228更新：发布10.1.2-7_amd64_Strong can dynamically display CPU information such as temperature, MHz, voltage, and power consumption in a Windows VM.Use cpu-z,hwinfo,hwmoniter.Intel和AMD CPU传感器穿透到虚拟机显示。
+20060228 update: Released 10.1.2-7_amd64_Strong which can dynamically display CPU information such as temperature, MHz, voltage, and power consumption in a Windows VM. Use cpu-z, hwinfo, hwmonitor. Intel and AMD CPU sensor passthrough to VM display.
 
-Intel CPU传感器穿透效果演示视频<img width="1545" height="1154" alt="inteldemo" src="https://github.com/user-attachments/assets/e5c2f90b-7e65-45d3-bbc4-6825551d421d" />
+Intel CPU sensor passthrough demo video<img width="1545" height="1154" alt="inteldemo" src="https://github.com/user-attachments/assets/e5c2f90b-7e65-45d3-bbc4-6825551d421d" />
 
 
 https://github.com/user-attachments/assets/cf95f3a1-9f47-46a1-94e5-cd68c5f5881c
 
-AMD CPU传感器穿透效果演示视频<img width="1478" height="1182" alt="amddemo" src="https://github.com/user-attachments/assets/2ebe3ca5-c438-4b98-83d9-4295a7d001b1" />
+AMD CPU sensor passthrough demo video<img width="1478" height="1182" alt="amddemo" src="https://github.com/user-attachments/assets/2ebe3ca5-c438-4b98-83d9-4295a7d001b1" />
 
 
 https://github.com/user-attachments/assets/69a922ea-df2c-4d13-94cc-d40736336b2e
 
-20250906更新：已取消主板型号随机（可自己定制），取消内存序列号随机（可自己定制），ide sata硬盘自己设置serial=20位序列号进行定制固定（不固定内部默认还是随机）。n卡独显直通43错误请二者选其一：ssdt.aml（不带电池）和ssdt-battery.aml（带个虚拟电池），台式机u选无电池，笔记本u选有电池，加载ssdt后43错误解决了就行。
+20250906 update: Removed random motherboard model (can be customized), removed random memory serial (can be customized), IDE/SATA disk serial can be set with serial=20-character-serial for fixed customization (defaults to random if not set). For NVIDIA discrete GPU passthrough error 43, choose one of: ssdt.aml (without battery) or ssdt-battery.aml (with virtual battery). Desktop CPUs should use no battery, laptop CPUs should use battery. Once SSDT is loaded and error 43 is resolved, you're done.
 
-20250805更新：增加acpi添加ssdt功能，ssdt-battery.aml里有个虚拟电池（可显示）ssdt.aml无虚拟电池、虚拟cpu和主板温度（可显示）、虚拟风扇（无法显示），你可以使用https://github.com/ic005k/Xiasl 直接对ssdt.aml（ssdt.aml==ssdt.dat 后缀名区别而已）进行自我编辑增加修改功能
+20250805 update: Added ACPI SSDT loading feature. ssdt-battery.aml includes a virtual battery (visible), ssdt.aml has no virtual battery, virtual CPU and motherboard temperature (visible), virtual fan (not visible). You can use https://github.com/ic005k/Xiasl to edit ssdt.aml (ssdt.aml==ssdt.dat, just different file extensions) for custom modifications.
 
-20250725更新：实现了无序三件套效果（只需要重启一下虚拟机就自动变化）：内存序列号随机，ide和sata硬盘序列号和固件号随机，主板型号随机
-
-
-1、前期准备工作：
-
-pve网页 数据中心-》选项-》MAC地址前缀你先改成D8:FC:93
-
-我个人的建议是直通sata硬盘或者m2硬盘给虚拟机，还有有线物理网卡（usb网卡）给虚拟机进行测试。
-
-！！！！！！！！！！！本项目都不对scsi以及virtio设备有使用限制！！！！！！！！！！！！！！！！！！！！！！！！！！！！
+20250725 update: Implemented randomized trio effect (just restart the VM for automatic changes): random memory serial, random IDE/SATA disk serial and firmware number, random motherboard model.
 
 
+1. Preparation:
 
-2、正式开始
+PVE web UI -> Datacenter -> Options -> Change MAC Address Prefix to D8:FC:93
 
-请把2个deb包和1个文件
+My personal recommendation is to passthrough a SATA or M.2 drive to the VM, along with a wired physical NIC (USB NIC) for testing.
 
-pve-qemu-kvm_10.xxx_amd64.deb  本项目下载  xxx代表你具体下载的版本
+!!! This project has NO usage restrictions on SCSI or Virtio devices !!!
 
-pve-edk2-firmware-ovmf_xxx.deb 本项目下载 ，也可以这个项目进行下载 https://github.com/AICodo/pve-emu-realpc_edk2-firmware-ovmf
+
+
+2. Getting Started
+
+Please upload these 2 deb packages and 1 file:
+
+pve-qemu-kvm_10.xxx_amd64.deb  Download from this project (xxx = your specific version)
+
+pve-edk2-firmware-ovmf_xxx.deb  Download from this project, or from https://github.com/AICodo/pve-emu-realpc_edk2-firmware-ovmf
 
 ssdt.aml
 
-这3个请用winscp 上传到/root目录下
+Upload these 3 files to /root using WinSCP
 
 
-3、查询目前安装的kvm包版本命令
+3. Check currently installed KVM package version
 
 dpkg -l|grep pve-qemu-kvm
 
-4、如果是10.x，直接安装这2个反检测包就是
+4. If running version 10.x, directly install these 2 anti-detection packages:
 
-dpkg -i pve-qemu-kvm_10.xxx_amd64.deb  xxx代表你具体下载的版本
+dpkg -i pve-qemu-kvm_10.xxx_amd64.deb  (xxx = your specific version)
 
 dpkg -i pve-edk2-firmware-xxx.deb
 
 
-如果qemu版本不是最新的，你升级下系统并安装本项目下载的最新包，命令如下:
+If your QEMU version is not the latest, upgrade your system and install the latest package from this project:
 
 apt update
 
 apt install pve-qemu-kvm
 
-dpkg -i pve-qemu-kvm_10.xxx_amd64.deb xxx代表你具体下载的版本
+dpkg -i pve-qemu-kvm_10.xxx_amd64.deb (xxx = your specific version)
 
 dpkg -i pve-edk2-firmware-ovmf_xxx.deb
 
 
-安装完成后不需要reboot机器
+No reboot required after installation
 
 
-如果你要恢复官方包只需要运行下面两个命令就能恢复官方包
+To restore official packages, just run these commands:
 
 apt reinstall pve-qemu-kvm
 
-#如果reinstall失败或者不成功可以执行这个命令强制重装指定版本  apt install pve-qemu-kvm=10.0.2-4 或者 apt reinstall pve-qemu-kvm=10.0.2-4
+#If reinstall fails, force reinstall a specific version: apt install pve-qemu-kvm=10.0.2-4 or apt reinstall pve-qemu-kvm=10.0.2-4
 
-apt reinstall pve-edk2-firmware-ovmf 或者 apt reinstall pve-edk2-firmware-ovmf=4.2025.02-4
+apt reinstall pve-edk2-firmware-ovmf or apt reinstall pve-edk2-firmware-ovmf=4.2025.02-4
 
-5、新建虚拟机
+5. Create a new virtual machine
 
-虚拟机使用ovmf+q35（推荐q35）或者ovmf+i440fx，配置中注意硬盘一定选择sata硬盘（至少128g，50g 80g等大小太不像物理机硬盘大小，别对硬盘大小太抠抠扣扣搜搜了，scsi及virtio硬盘光驱网卡设备等避开使用），ide或者sata光驱，显示先选择标准（弄好后再直通独显核显vgpu等），cpu选择host（1插槽多核心这点一定注意），网卡选择e1000显卡（注意网卡mac地址问题，免得检测虚拟机），避开各种virtio设备（SCSI硬盘光驱、virtio网卡、virtioBlock硬盘、virtio-GPU等），并修改虚拟机的args参数和我一样。内存请使用8192 16384 4096这三个数值并且不开ballooning（更加像物理机内存大小），对应8g 16g 4g，其他大小请勿设置（太假太像虚拟机）。
+Use OVMF+Q35 (recommended) or OVMF+i440fx. In the configuration, make sure to select SATA disk (at least 128GB - 50GB/80GB are too small to look like a real physical disk, don't be stingy with disk size; avoid SCSI and Virtio disk/optical/network devices), IDE or SATA optical drive, display set to Standard initially (switch to GPU passthrough for dedicated/integrated/vGPU later), CPU set to host (1 socket with multiple cores - this is important), network adapter set to e1000 (watch out for MAC address issues to avoid VM detection), avoid all Virtio devices (SCSI disks/optical drives, Virtio NIC, VirtioBlock disks, Virtio-GPU, etc.), and modify the VM args parameters to match mine. Memory should be 8192, 16384, or 4096 with ballooning disabled (to look more like physical machine memory), corresponding to 8GB, 16GB, 4GB. Do not use other sizes (too suspicious, too VM-like).
 
-只有一个原则：硬盘大小，内存大小，网卡都得像真实物理机配置！！！
+Only one principle: disk size, memory size, and NICs must look like a real physical machine configuration!!
 
-使用以下类似命令修改虚拟机配置
+Use the following command to edit VM configuration:
 
 nano /etc/pve/qemu-server/100.conf
 
-我的完整虚拟机配置如下(适用于qemu 9和10 版本，qemu 7和qemu 8请看补充):
+My complete VM configuration (for QEMU 9 and 10; for QEMU 7 and 8 see supplementary notes):
 
 args: -acpitable file=/root/ssdt.aml -acpitable file=/root/ssdt-ec.aml -acpitable file=/root/hpet.aml -cpu host,host-cache-info=on,hypervisor=off,vmware-cpuid-freq=false,enforce=false,host-phys-bits=true -smbios type=0,vendor="American Megatrends International LLC.",version=H3.7G,date='02/21/2023',release=3.7 -smbios type=1,manufacturer="Maxsun",product="MS-Terminator B760M",version="VER:H3.7G(2022/11/29)",serial="Default string",sku="Default string",family="Default string" -smbios type=2,manufacturer="Maxsun",product="MS-Terminator B760M",version="VER:H3.7G(2022/11/29)",serial="Default string",asset="Default string",location="Default string" -smbios type=3,manufacturer="Default string",version="Default string",serial="Default string",asset="Default string",sku="Default string" -smbios type=17,serial=DF1EC466,asset="9876543210" -smbios type=4,manufacturer="Intel(R) Corporation",version="12th Gen Intel(R) 0000" -smbios type=9 -smbios type=8 -smbios type=8
 
@@ -134,47 +134,16 @@ usb1: host=258a:002a
 
 vmgenid: 2271babc-cafc-4c68-be8b-2bb3157c9924
 
-补充：qemu 10 虚拟机中的args参数我现在全部做了除了上面的可以设置（其他做了影藏定制），就用我这上面的args就是。硬盘不想序列号随机请ide sata设置serial=0123456789ABCDEF0123  类似这样20位数据）。aida64你进去看就知道有些什么硬件了（风扇、温度、电压等）
+Supplementary: In QEMU 10, the args parameters above are all that's needed (other settings are hidden/built-in). Just use the args shown above. To fix disk serial randomization, set serial=0123456789ABCDEF0123 (20-character string) for IDE/SATA. Check aida64 to see what hardware is present (fans, temperature, voltage, etc.)
 
-如果是qemu 7和8，需要使用下面的args
+For QEMU 7 and 8, use the following args:
 
 args: -acpitable file=/root/ssdt.aml -cpu host,host-cache-info=on,hypervisor=off,vmware-cpuid-freq=false,enforce=false,host-phys-bits=true -smbios type=0,vendor="American Megatrends International LLC.",version=H3.7G,date='02/21/2023',release=3.7 -smbios type=1,manufacturer="Maxsun",product="MS-Terminator B760M",version="VER:H3.7G(2022/11/29)",serial="Default string",sku="Default string",family="Default string" -smbios type=2,manufacturer="Maxsun",product="MS-Terminator B760M",version="VER:H3.7G(2022/11/29)",serial="Default string",asset="Default string",location="Default string" -smbios type=3,manufacturer="Default string",version="Default string",serial="Default string",asset="Default string",sku="Default string" -smbios type=17,loc_pfx="Controller0-ChannelA-DIMM",manufacturer="KINGSTON",speed=3200,serial=DF1EC466,part="SED3200U1888S",bank="BANK 0",asset="9876543210" -smbios type=4,sock_pfx="LGA1700",manufacturer="Intel(R) Corporation",version="12th Gen Intel(R) Core(TM) i7-12700",max-speed=4900,current-speed=3800,serial="To Be Filled By O.E.M.",asset="To Be Filled By O.E.M.",part="To Be Filled By O.E.M." -smbios type=8,internal_reference="CPU FAN",external_reference="Not Specified",connector_type=0xFF,port_type=0xFF -smbios type=8,internal_reference="J3C1 - GMCH FAN",external_reference="Not Specified",connector_type=0xFF,port_type=0xFF -smbios type=8,internal_reference="J2F1 - LAI FAN",external_reference="Not Specified",connector_type=0xFF,port_type=0xFF -smbios type=11,value="Default string"
 
-6、其他内容详见本项目tools目录，虚拟机检测工具.rar，还有高级检测软件。高级检测还得是al-khaser和pafish64.exe检测软件。pafish和al-khaser是虚拟机环境检测的两个金标准。
+6. Additional content is in the tools directory of this project, including VM detection tools. For advanced detection, al-khaser and pafish64.exe are the gold standards for VM environment detection.
 
 
-本项目抛砖引玉，欢迎fork本项目后自我继续折腾！！！
+This project is meant to inspire further exploration. Feel free to fork and continue experimenting!!!
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=AICodo/pve-emu-realpc&type=Date)](https://www.star-history.com/#AICodo/pve-emu-realpc&Date)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

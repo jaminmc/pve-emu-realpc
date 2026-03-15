@@ -1,0 +1,84 @@
+[DEBUG] HYPERVISOR_STR:
+eax: 1
+ebx: 0
+ecx: 0
+edx: 64
+1. [  DETECTED  ] Checking hypervisor str...     Physical machines return all zeros
+
+[CORE DEBUG] HYPER_X: returned from cache
+[DEBUG] CPUID: max hypervisor leaf = 1073741825
+[DEBUG] Average read latency: 2360 cycles
+2. [  DETECTED  ] Checking timing anomalies...  This sometimes passes and sometimes doesn't; requires kernel modification, not done for now
+
+[DEBUG] REGISTRY_KEYS: detected HKLM\SYSTEM\ControlSet001\Services\VirtioSerial for brand KVM
+[DEBUG] REGISTRY_KEYS: detected HKLM\SYSTEM\ControlSet001\Services\BALLOON for brand KVM
+[DEBUG] REGISTRY_KEYS: detected HKLM\SYSTEM\ControlSet001\Services\BalloonService for brand KVM
+[DEBUG] REGISTRY_KEYS: detected HKLM\SYSTEM\ControlSet001\Services\netkvm for brand KVM       Easy to fix. Delete the matching entries in the registry. Or install a fresh Win10 system. If deletion fails, download https://learn.microsoft.com/en-us/sysinternals/downloads/pstools and use PsExec to force delete - run in admin cmd: psexec -i -d -s regedit.exe to delete as SYSTEM user
+3. [  DETECTED  ] Checking registry keys...
+
+4. [  DETECTED  ] Checking GPU capabilities... This requires a GPU; related to the "Checking QEMU passthrough" error below (one of two)
+
+[DEBUG] QEMU_PASSTHROUGH: PCIROOT(0)#PCI(0200) PCI GPU passthrough device issue - working on a solution
+[DEBUG] QEMU_PASSTHROUGH: ACPI(_SB_)#ACPI(PCI0)#ACPI(S10_)  PCI GPU passthrough device issue - working on a solution
+4. [  DETECTED  ] Checking QEMU passthrough... This single check identifies QEMU+KVM VM. This detection was removed in later versions, just ignore it.
+
+[DEBUG] FIRMWARE: Not enough SSDT tables for a real system  Fix: load two or more SSDTs, e.g. args: -acpitable file=/root/ssdt.aml -acpitable file=/root/ssdt-ec.aml
+[DEBUG] FIRMWARE: No _OSI params found  Fix: implement _OSI for Windows 2012, 2013 etc. keywords in DSDT
+[DEBUG] FIRMWARE: HPET table not found  Fix: load -acpitable file=/root/hpet.aml
+[DEBUG] FIRMWARE: FACP indicates VM (rev 3), (length 244)  Most VMs use an older-style FADT of length 244 bytes (revision 3). Fix: change revision 3 to 4, and increase length beyond 244 by adding Sleep Control/Status registers and Hypervisor ID to reach 268
+[DEBUG] FIRMWARE: SSDT/DSDT revision indicates VM (rev 1)  Fix: set SSDT and DSDT revision to at least 2
+[DEBUG] FIRMWARE: ACPI missing thermal zones and/or PrepareToSleep information  Fix: add _TZ_ and _PTS like _OSI
+5. [  DETECTED  ] Checking firmware...
+
+[DEBUG] ACPI_SIGNATURE: PCIROOT(0)#PCI(0100)
+[DEBUG] ACPI_SIGNATURE: ACPI(_SB_)#ACPI(PCI0)#ACPI(S08_)  Avoid having ACPI(Sxx where x represents digits
+ACPI_SIGNATURE: No baremetal display device information detected  This is usually caused by remote control software like RustDesk creating a virtual display device (e.g. USB Mobile Monitor Virtual Display). Just uninstall it.
+6. [  DETECTED  ] Checking ACPI device signatures... Working on this gradually
+
+[DEBUG] PCI_DEVICES: Found 886 devices  Need to check and remove these gradually
+[DEBUG] PCI_DEVICES: Detected Red Hat + Virtio device -> 452202496 =1af41000  Avoid devices with 0x1af4, 0x1b36, 0x0627 to fix this; ich9-intel-hda audio also needs handling
+To force delete, download https://learn.microsoft.com/en-us/sysinternals/downloads/pstools and use PsExec - run in admin cmd: psexec -i -d -s regedit.exe to delete as SYSTEM user. Delete all 0x1af4, 0x1b36, 0x0627 devices under HKLM\SYSTEM\CurrentControlSet\Enum (pci, usb, hdaudio)
+7. [  DETECTED  ] Checking PCI vendor/device ID...
+
+[CORE DEBUG] HYPER_X: returned from cache                "Checking hypervisor str" was fixed, why does this still appear? Working on it.
+8. [  DETECTED  ] Checking hypervisor interception... Bypass using kvm.ko kernel module
+
+
+[DEBUG] theoretical maximum points: 3915
+[CORE DEBUG] scoreboard: 2 : QEMU+KVM
+[CORE DEBUG] VM::brand(): returned brand from cache
+[CORE DEBUG] VM::brand(): returned brand from cache
+VM brand: QEMU+KVM
+VM type: Hypervisor (type 1)
+VM likeliness: 100%
+VM confirmation: true
+VM detections: 8/96
+
+Besides pafish and al-khaser as the two gold standards for VM detection, there's now a new detection project: https://github.com/kernelwernel/VMAware
+
+Above are VMAware detection results. 8 checks failed. Current status of fixes:
+
+    1. [  DETECTED  ] Checking hypervisor str... Fixed by modifying KVM
+    2. [  DETECTED  ] Checking timing anomalies...  Sometimes passes, sometimes doesn't; requires kernel modification (too lazy to do it)
+    3. [  DETECTED  ] Checking registry keys... 
+        Delete matching entries in the registry
+    4. [  DETECTED  ] Checking GPU capabilities...
+        Add GPU passthrough (integrated/discrete/vGPU)
+    5. [  DETECTED  ] Checking firmware...
+        Many things to fix here; mostly done
+    6. [  DETECTED  ] Checking ACPI device signatures...
+        Fix each detection as it comes
+    7. [  DETECTED  ] Checking PCI vendor/device ID... 
+        "HKLM\\SYSTEM\\CurrentControlSet\\Enum\\PCI",
+        "HKLM\\SYSTEM\\CurrentControlSet\\Enum\\USB",
+        "HKLM\\SYSTEM\\CurrentControlSet\\Enum\\HDAUDIO"
+        Delete all devices with 0x1af4, 0x1b36, 0x0627 from these three registry locations. If you can't delete (permission errors), reinstall Win10 or download https://learn.microsoft.com/en-us/sysinternals/downloads/pstools and use PsExec to force delete - run in admin cmd: psexec -i -d -s regedit.exe to delete as SYSTEM user
+    8. [  DETECTED  ] Checking hypervisor interception...
+        Bypass using kvm.ko kernel module
+    
+    
+    
+
+20250814 test snapshot
+20250821 updated
+20250830 updated

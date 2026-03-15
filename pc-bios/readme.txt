@@ -1,2 +1,2 @@
 seabios Strong bios
-seabios-autoGenPatch.patch为处理代码可做参考
+seabios-autoGenPatch.patch contains the processing code for reference

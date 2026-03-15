@@ -1,0 +1,52 @@
+List of detection checks that currently cannot be bypassed. The source code for this detection software is at: https://github.com/LordNoteworthy/al-khaser - you can compile it yourself using VS2022 (must be this version, older ones won't compile) to test the issues below.
+You can also use pafish64.exe for detection testing, source: https://github.com/a0rtega/pafish - requires Mingw to compile; alternatively download a pre-built executable.
+Note: pafish and al-khaser are the two gold standards for VM environment detection.
+
+[al-khaser version 0.82] This software requires various VC runtime environments to run!
+-------------------------[Generic Sandbox/VM Detection]-------------------------
+[*] Checking Local Descriptor Table location                                                       [ BAD  ] LDT base: 0xdeadbeef     not LDT base: 0xdead0000 - This is hard to fix; physical machines also show this result
+[*] Checking hard disk size using WMI                                                                   Fix: system disk should be larger than 80GB, ideally 128GB or more - make it look like a real SSD size
+[*] Checking disk size using GetDiskFreeSpaceEx                                                    Fix: system disk should be larger than 80GB, ideally 128GB or more - make it look like a real SSD size
+[*] Checking CPU fan using WMI                                                                    You can test on physical/virtual machine via cmd: wmic path Win32_Fan get *
+[*] Checking Win32_CacheMemory with WMI                                                           wmic path Win32_CacheMemory get *
+[*] Checking Win32_PhysicalMemory with WMI                                                        wmic path Win32_PhysicalMemory get *
+[*] Checking Win32_MemoryDevice with WMI                                                          wmic path Win32_MemoryDevice get *
+[*] Checking Win32_MemoryArray with WMI                                                           wmic path Win32_MemoryArray get *
+[*] Checking Win32_VoltageProbe with WMI (voltage probe)                                          wmic path Win32_VoltageProbe get *
+[*] Checking Win32_PortConnector with WMI                                                         wmic path Win32_PortConnector get *  
+[*] Checking Win32_SMBIOSMemory with WMI                                                          wmic path Win32_SMBIOSMemory get *
+[*] Checking ThermalZoneInfo performance counters with WMI                                         wmic path Win32_PerfFormattedData_Counters_ThermalZoneInformation get *  - Fixed by loading SSDT via ACPI
+[*] Checking CIM_Memory with WMI (physical memory)                                                wmic path CIM_Memory get *
+[*] Checking CIM_Sensor with WMI (sensor devices)                                                 wmic path CIM_Sensor get *
+[*] Checking CIM_NumericSensor with WMI (numeric sensors)                                         wmic path CIM_NumericSensor get *
+[*] Checking CIM_TemperatureSensor with WMI (temperature sensors)                                 wmic path CIM_TemperatureSensor get *
+[*] Checking CIM_VoltageSensor with WMI (voltage sensors)                                         wmic path CIM_VoltageSensor get *
+[*] Checking CIM_PhysicalConnector with WMI                                                       wmic path CIM_PhysicalConnector get *  
+[*] Checking CIM_Slot with WMI                                                                    wmic path CIM_Slot get *
+[*] Checking if Windows is Genuine                                                                 Fix: just activate Windows
+[*] Checking Enum\IDE and Enum\SCSI entries for VM strings                                
+Checking System\CurrentControlSet\Enum\IDE CdRomQEMU_QEMU_DVD-ROM_______________________2.5+____ for qemu (1) 
+Current fix: use the anti-detection package from the start when installing Windows. If you don't want to reinstall, use https://learn.microsoft.com/en-us/sysinternals/downloads/pstools - run PsExec in admin cmd: psexec -i -d -s regedit.exe to delete as SYSTEM user. Delete all QEMU-related directories/devices under HKLM\SYSTEM\CurrentControlSet\Enum (acpi, scsi, ide).
+[*] Checking SMBIOS tables                                   At least 41 type devices needed                                      
+
+-------------------------[Hyper-V Detection]-------------------------
+[*] Checking for Hyper-V global objects                                                          Contains keyword VDRVROOT - can be ignored, physical machines have it too. It's called Microsoft Virtual Drive Enumerator. If it bothers you, just uninstall it from Device Manager; uninstalling will pass this check.
+object: VDRVROOT
+object: ROOT#vdrvroot#0000#{2e34d650-5819-42ca-84ae-d30803bae505}
+
+
+
+-------------------------[Timing-attacks]-------------------------
+[*] Checking RDTSC which force a VM Exit (cpuid)                                                 This requires kernel patching using a custom kernel or KVM kernel module; currently bypassed.
+
+
+Overall, pafish and al-khaser currently have only 1 check that cannot be bypassed:
+1. Checking Local Descriptor Table location - I tested this on several physical machines and they also fail
+
+My personal recommendation is to passthrough a SATA or M.2 drive to the VM, along with a wired physical NIC (USB NIC) for testing.
+
+Also see VMAware-detection-checks-that-currently-fail.txt for additional information.
+
+
+
+

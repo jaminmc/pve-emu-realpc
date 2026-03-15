@@ -585,8 +585,8 @@ static struct {
 	QTAILQ_ENTRY(type28) next;
 } type28;
 
-/* SMBIOS type 7 CacheInformation CPU缓存信息 123级cpu缓存 AICodo added */
-//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf 请使用这个规范文件System Management BIOS (SMBIOS) Reference Specification设置type 7 内部参数信息
+/* SMBIOS type 7 CacheInformation - L1/L2/L3 CPU cache - AICodo added */
+//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf Refer to SMBIOS Reference Specification for type 7 parameter details
 static void smbios_build_type_7_table(unsigned instance,const char *socket_designation,uint16_t cache_configuration,uint16_t max_cache_size,uint8_t error_correction,uint8_t system_cache_type,uint8_t associativity)
 {
 	type7.socket_designation=socket_designation;
@@ -596,7 +596,7 @@ static void smbios_build_type_7_table(unsigned instance,const char *socket_desig
 	t->max_cache_size=max_cache_size;
 	t->installed_size=max_cache_size;
 	t->supported_sram_type=0x20;
-	t->current_sram_type=0x20; //0x20 代表Synchronous
+	t->current_sram_type=0x20; //0x20 = Synchronous
 	t->cache_speed=0x0; //None
 	t->error_correction=error_correction;
 	t->system_cache_type=system_cache_type;
@@ -604,29 +604,29 @@ static void smbios_build_type_7_table(unsigned instance,const char *socket_desig
 	SMBIOS_BUILD_TABLE_POST;
 }   
 
-/* SMBIOS type 20 MemoryDeviceMappedAddress 内存设备映射地址信息 AICodo added */
-//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf 请使用这个规范文件System Management BIOS (SMBIOS) Reference Specification设置type 20 内部参数信息
+/* SMBIOS type 20 MemoryDeviceMappedAddress - memory device mapped address info - AICodo added */
+//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf Refer to SMBIOS Reference Specification for type 20 parameter details
 static void smbios_build_type_20_table(uint64_t start, uint64_t size)
 {
 	uint64_t end, start_kb, end_kb;
     end = start + size - 1;
     assert(end > start);
     start_kb = start / KiB;
-    end_kb = end/ KiB; 	//AICodo 直接塞进去当前内存大小（不知道是否逻辑正确）
+	end_kb = end/ KiB; 	//AICodo directly use current memory size (not sure if this logic is correct)
 
     SMBIOS_BUILD_TABLE_PRE(20, T20_BASE, true); /* required */
 	t->starting_address = cpu_to_le32(start_kb);
     t->ending_address = cpu_to_le32(end_kb);
-	t->memory_device_handle=0x003C; //查文档
-	t->memory_array_mapped_address_handle=0x0040;//查文档
-	t->partition_row_position=0x1;//查文档
-	t->interleave_position=0x1;//查文档
-	t->interleave_data_depth=0x2;//查文档
+	t->memory_device_handle=0x003C; //see spec
+	t->memory_array_mapped_address_handle=0x0040;//see spec
+	t->partition_row_position=0x1;//see spec
+	t->interleave_position=0x1;//see spec
+	t->interleave_data_depth=0x2;//see spec
     SMBIOS_BUILD_TABLE_POST;
 }
 
-/* SMBIOS type 26 VoltageProbe 电压传感器设备信息 AICodo added*/
-//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf 请使用这个规范文件System Management BIOS (SMBIOS) Reference Specification设置type 26 内部参数信息
+/* SMBIOS type 26 VoltageProbe - voltage sensor device info - AICodo added*/
+//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf Refer to SMBIOS Reference Specification for type 26 parameter details
 static void smbios_build_type_26_table(unsigned instance,const char *description,uint8_t location_and_status)
 {
 	type26.description=description;
@@ -640,12 +640,12 @@ static void smbios_build_type_26_table(unsigned instance,const char *description
 	t->accuracy=0x10;
 	t->oem_defined=0x00000000;
 	t->nominal_value=0x1000;
-	//AICodo 这些参数你要查一下文档进行设置，我随便设置的
+	//AICodo these parameters should be verified against the spec; currently set to placeholder values
     SMBIOS_BUILD_TABLE_POST;
 }
 
-/* SMBIOS type 27 CoolingDevice 风扇设备信息 AICodo added*/
-//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf 请使用这个规范文件System Management BIOS (SMBIOS) Reference Specification设置type 27 内部参数信息
+/* SMBIOS type 27 CoolingDevice - fan device info - AICodo added*/
+//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf Refer to SMBIOS Reference Specification for type 27 parameter details
 static void smbios_build_type_27_table(unsigned instance,const char *description,uint8_t device_type_and_status)
 {
 	type27.description=description;
@@ -654,14 +654,14 @@ static void smbios_build_type_27_table(unsigned instance,const char *description
 	t->device_type_and_status = device_type_and_status; //Power Supply Fan |  Ok   0x67=b01100111
 	t->cooling_unit_group=0x1;
 	t->OEM_defined=0x00000000;
-	t->nominal_speed=0x5DC; //0x5DC代表1500转
-	//AICodo 这些参数你要查一下文档进行设置，我随便设置的
+	t->nominal_speed=0x5DC; //0x5DC = 1500 RPM
+	//AICodo these parameters should be verified against the spec; currently set to placeholder values
 	SMBIOS_TABLE_SET_STR(27, description,type27.description);
     SMBIOS_BUILD_TABLE_POST;
 }
 
-/* SMBIOS type 28 TemperatureProbe 温度设备信息 AICodo added*/
-//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf 请使用这个规范文件System Management BIOS (SMBIOS) Reference Specification设置type 28 内部参数信息
+/* SMBIOS type 28 TemperatureProbe - temperature sensor device info - AICodo added*/
+//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf Refer to SMBIOS Reference Specification for type 28 parameter details
 static void smbios_build_type_28_table(unsigned instance,const char *description,uint8_t location_and_status)
 {
 	type28.description=description;
@@ -675,20 +675,20 @@ static void smbios_build_type_28_table(unsigned instance,const char *description
 	t->accuracy=0x10;
 	t->OEM_defined=0x00000000;
 	t->nominal_value=0x100;
-	//AICodo 这些参数你要查一下文档进行设置，我随便设置的
+	//AICodo these parameters should be verified against the spec; currently set to placeholder values
     SMBIOS_BUILD_TABLE_POST;
 }
 
-/* SMBIOS type 37 MemoryChannel 内存通道信息（这个没有写完） AICodo added*/
-//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf 请使用这个规范文件System Management BIOS (SMBIOS) Reference Specification设置type 37 内部参数信息
+/* SMBIOS type 37 MemoryChannel - memory channel info (incomplete) - AICodo added*/
+//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf Refer to SMBIOS Reference Specification for type 37 parameter details
 static void smbios_build_type_37_table(void)
 {
     SMBIOS_BUILD_TABLE_PRE(37, T37_BASE, true); /* required */
     SMBIOS_BUILD_TABLE_POST;
 }
 
-/* SMBIOS type 29 ElectricalCurrentProbe （电流探头 这个没有写完） AICodo added*/
-//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf 请使用这个规范文件System Management BIOS (SMBIOS) Reference Specification设置type 29 内部参数信息
+/* SMBIOS type 29 ElectricalCurrentProbe (incomplete) - AICodo added*/
+//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf Refer to SMBIOS Reference Specification for type 29 parameter details
 static void smbios_build_type_29_table(void)
 {
     SMBIOS_BUILD_TABLE_PRE(29, T29_BASE, true); /* required */
@@ -696,8 +696,8 @@ static void smbios_build_type_29_table(void)
     SMBIOS_BUILD_TABLE_POST;
 }
 
-/* SMBIOS type 39 SystemPowerSupply （供电 这个没有写完） AICodo added*/
-//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf 请使用这个规范文件System Management BIOS (SMBIOS) Reference Specification设置type 39 内部参数信息
+/* SMBIOS type 39 SystemPowerSupply (incomplete) - AICodo added*/
+//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf Refer to SMBIOS Reference Specification for type 39 parameter details
 static void smbios_build_type_39_table(void)
 {
     SMBIOS_BUILD_TABLE_PRE(39, T39_BASE, true); /* required */
@@ -705,8 +705,8 @@ static void smbios_build_type_39_table(void)
     SMBIOS_BUILD_TABLE_POST;
 }
 
-/* SMBIOS type 22 PortableBattery （电池 这个基本写完） AICodo added*/
-//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf 请使用这个规范文件System Management BIOS (SMBIOS) Reference Specification设置type 22 内部参数信息
+/* SMBIOS type 22 PortableBattery (mostly complete) - AICodo added*/
+//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf Refer to SMBIOS Reference Specification for type 22 parameter details
 static void smbios_build_type_22_table(void)
 {
     SMBIOS_BUILD_TABLE_PRE(22, T22_BASE, true); /* required */
@@ -750,7 +750,7 @@ static void smbios_build_type_0_table(void)
     t->bios_characteristics = cpu_to_le64(0x08); /* Not supported */
 
     t->bios_characteristics_extension_bytes[0] = 0xEF; //AICodo modify
-    t->bios_characteristics_extension_bytes[1] = 0x0F; /* //AICodo modify 只要不是0x10 也就是16就不会显示VirtualMachineSupported */
+    t->bios_characteristics_extension_bytes[1] = 0x0F; /* //AICodo modify as long as it's not 0x10 (16), VirtualMachineSupported won't be shown */
 
     if (smbios_type0.uefi) {
         t->bios_characteristics_extension_bytes[1] |= 0x08; /* |= UEFI */
@@ -856,9 +856,9 @@ static void smbios_build_type_4_table(MachineState *ms, unsigned instance,
     SMBIOS_BUILD_TABLE_PRE_SIZE(4, T4_BASE + instance,
                                 true, tbl_len); /* required */
     snprintf(sock_str, sizeof(sock_str), "%s%2x", type4.sock_pfx, instance);
-    SMBIOS_TABLE_SET_STR(4, socket_designation_str, "LGA1700"); //AICodo modify 直接改成12代的LGA1700 接口
+    SMBIOS_TABLE_SET_STR(4, socket_designation_str, "LGA1700"); //AICodo modify changed to 12th gen LGA1700 socket
     t->processor_type = 0x03; /* CPU */
-    t->processor_family = 0x01; /* Other use Processor Family 2 field */ //AICodo modify 0xC6代表 Intel® Core™ i7 processor
+    t->processor_family = 0x01; /* Other use Processor Family 2 field */ //AICodo modify 0xC6 = Intel Core i7 processor
     SMBIOS_TABLE_SET_STR(4, processor_manufacturer_str, type4.manufacturer);
     if (type4.processor_id == 0) {
         t->processor_id[0] = cpu_to_le32(smbios_cpuid_version);
@@ -889,8 +889,8 @@ static void smbios_build_type_4_table(MachineState *ms, unsigned instance,
 
     t->thread_count = (threads_per_socket > 255) ? 0xFF : threads_per_socket;
 
-    t->processor_characteristics = cpu_to_le16(0xFC); /* Unknown */ //AICodo modify 0x4 计算得到代表64-bit Capable
-    t->processor_family2 = cpu_to_le16(0x01); //Other AICodo modify 和t->processor_family保持一致不一致都可以
+    t->processor_characteristics = cpu_to_le16(0xFC); /* Unknown */ //AICodo modify 0x4 = 64-bit Capable
+    t->processor_family2 = cpu_to_le16(0x01); //Other AICodo modify can match or differ from t->processor_family
 
     if (tbl_len == SMBIOS_TYPE_4_LEN_V30) {
         t->core_count2 = t->core_enabled2 = cpu_to_le16(cores_per_socket);
@@ -918,9 +918,9 @@ static void smbios_build_type_8_table(void)
         SMBIOS_TABLE_SET_STR(8, internal_reference_str, "FAN"); //AICodo modify
         SMBIOS_TABLE_SET_STR(8, external_reference_str, "CPU FAN"); //AICodo modify
         /* most vendors seem to set this to None */
-        t->internal_connector_type = 0x0; //AICodo modify 0x0代表None
-        t->external_connector_type =0xFF; //AICodo modify 0xFF代表Other
-        t->port_type = 0xFF; //AICodo modify 0xFF代表 Other
+        t->internal_connector_type = 0x0; //AICodo modify 0x0 = None
+        t->external_connector_type =0xFF; //AICodo modify 0xFF = Other
+        t->port_type = 0xFF; //AICodo modify 0xFF = Other
 
         SMBIOS_BUILD_TABLE_POST;
         instance++;
@@ -1016,9 +1016,9 @@ static void smbios_build_type_16_table(unsigned dimm_cnt)
 
     SMBIOS_BUILD_TABLE_PRE(16, T16_BASE, true); /* required */
 
-    t->location = 0x03; /* Other */ //AICodo modify 0x03代表 System board or motherboard
+    t->location = 0x03; /* Other */ //AICodo modify 0x03 = System board or motherboard
     t->use = 0x03; /* System memory */
-    t->error_correction = 0x03; /* Multi-bit ECC (for Microsoft, per SeaBIOS) */ //AICodo modify 0x03代表 None
+    t->error_correction = 0x03; /* Multi-bit ECC (for Microsoft, per SeaBIOS) */ //AICodo modify 0x03 = None
     size_kb = QEMU_ALIGN_UP(current_machine->ram_size, KiB) / KiB;
     if (size_kb < MAX_T16_STD_SZ) {
         t->maximum_capacity = cpu_to_le32(size_kb);
@@ -1045,8 +1045,8 @@ static void smbios_build_type_17_table(unsigned instance, uint64_t size)
 
     t->physical_memory_array_handle = cpu_to_le16(0x1000); /* Type 16 above */
     t->memory_error_information_handle = cpu_to_le16(0xFFFE); /* Not provided */
-    t->total_width = cpu_to_le16(64); /* Unknown */ //AICodo modify 64位
-    t->data_width = cpu_to_le16(64); /* Unknown */  //AICodo modify 64位
+    t->total_width = cpu_to_le16(64); /* Unknown */ //AICodo modify 64-bit
+    t->data_width = cpu_to_le16(64); /* Unknown */  //AICodo modify 64-bit
     size_mb = QEMU_ALIGN_UP(size, MiB) / MiB;
     if (size_mb < MAX_T17_STD_SZ) {
         t->size = cpu_to_le16(size_mb);
@@ -1059,20 +1059,20 @@ static void smbios_build_type_17_table(unsigned instance, uint64_t size)
     t->form_factor = 0x0D; /* SODIMM */
     t->device_set = 0; /* Not in a set */
     snprintf(loc_str, sizeof(loc_str), "%s %d", type17.loc_pfx, instance);
-    SMBIOS_TABLE_SET_STR(17, device_locator_str, "ChannelA-DIMM0");   //AICodo modify 内存设备位置
-    SMBIOS_TABLE_SET_STR(17, bank_locator_str, "BANK 0");  //AICodo modify 内存插槽位置
-     t->memory_type = 0x18; /* DDR3 */  //AICodo modify ddr3类型
-    t->type_detail = cpu_to_le16(0x80); /* test 0x80*/ //AICodo modify 0x80代表 Synchronous
+    SMBIOS_TABLE_SET_STR(17, device_locator_str, "ChannelA-DIMM0");   //AICodo modify memory device location
+    SMBIOS_TABLE_SET_STR(17, bank_locator_str, "BANK 0");  //AICodo modify memory slot location
+     t->memory_type = 0x18; /* DDR3 */  //AICodo modify DDR3 type
+    t->type_detail = cpu_to_le16(0x80); /* test 0x80*/ //AICodo modify 0x80 = Synchronous
     t->speed = cpu_to_le16(1600); //AICodo modify 1600mhz
     SMBIOS_TABLE_SET_STR(17, manufacturer_str, "Kingston"); //AICodo modify
     SMBIOS_TABLE_SET_STR(17, serial_number_str, type17.serial);//AICodo modify
     SMBIOS_TABLE_SET_STR(17, asset_tag_number_str, type17.asset);//AICodo modify
     SMBIOS_TABLE_SET_STR(17, part_number_str, "KHX1600C9S3L/32G");//AICodo modify
-    t->attributes = 0x02; /* test 1 */ //AICodo modify 1代表 记不得了，你要测一下
+    t->attributes = 0x02; /* test 1 */ //AICodo modify needs testing to verify
     t->configured_clock_speed = t->speed; /* reuse value for max speed */
-    t->minimum_voltage = cpu_to_le16(1350); /* Unknown */ //AICodo modify 1.35v
-    t->maximum_voltage = cpu_to_le16(1500); /* Unknown */ //AICodo modify  1.5v
-    t->configured_voltage = cpu_to_le16(1350); /* Unknown */ //AICodo modify 1.35v
+    t->minimum_voltage = cpu_to_le16(1350); /* Unknown */ //AICodo modify 1.35V
+    t->maximum_voltage = cpu_to_le16(1500); /* Unknown */ //AICodo modify 1.5V
+    t->configured_voltage = cpu_to_le16(1350); /* Unknown */ //AICodo modify 1.35V
 
     SMBIOS_BUILD_TABLE_POST;
 }
@@ -1088,7 +1088,7 @@ static void smbios_build_type_19_table(unsigned instance, unsigned offset,
     end = start + size - 1;
     assert(end > start);
     start_kb = start / KiB;
-    end_kb = end/ KiB; //AICodo modify 直接end除以Kib
+    end_kb = end/ KiB; //AICodo modify directly divide end by KiB
     if (start_kb < UINT32_MAX && end_kb < UINT32_MAX) {
         t->starting_address = cpu_to_le32(start_kb);
         t->ending_address = cpu_to_le32(end_kb);
@@ -1295,10 +1295,10 @@ static bool smbios_get_tables_ep(MachineState *ms,
 	//AICodo added
 	//unsigned instance,const char *socket_designation,uint16_t cache_configuration,uint16_t max_cache_size,uint8_t error_correction,uint8_t system_cache_type,uint8_t associativity
 	/*
-	cach1 example
-	t->cache_configuration=0x180; 180代表Write Back,Enabled,Internal,Not Socketed,L1
-	t->max_cache_size=0x100; 100是256KB
-	t->installed_size=0x100; 100是256KB
+	cache1 example
+	t->cache_configuration=0x180; 0x180 = Write Back, Enabled, Internal, Not Socketed, L1
+	t->max_cache_size=0x100; 0x100 = 256KB
+	t->installed_size=0x100; 0x100 = 256KB
 	t->supported_sram_type=0x20;  Synchronous
 	t->current_sram_type=0x20; Synchronous
 	t->cache_speed=0x0; unknown
@@ -1307,10 +1307,10 @@ static bool smbios_get_tables_ep(MachineState *ms,
 	t->associativity=0x9; 12-way Set-Associative
 	*/
 	unsigned cores_per_socket = machine_topo_get_cores_per_socket(ms);
-	smbios_build_type_7_table(0,"L1 Cache",0x180,cores_per_socket*0x20,0x4,0x4,0x7); //AICodo added 设置1级数据缓存，每个核心32kb
-	smbios_build_type_7_table(1,"L1 Cache",0x180,cores_per_socket*0x20,0x4,0x3,0x7); //AICodo added 设置1级指令缓存，每个核心32kb
-	smbios_build_type_7_table(2,"L2 Cache",0x181,cores_per_socket*0x200,0x5,0x5,0x8); //AICodo added 设置2级Unified缓存每个核心512kb
-	smbios_build_type_7_table(3,"L3 Cache",0x182,0x4000,0x6,0x5,0x8); //AICodo added 设置3级Unified缓存，16M
+	smbios_build_type_7_table(0,"L1 Cache",0x180,cores_per_socket*0x20,0x4,0x4,0x7); //AICodo added L1 data cache, 32KB per core
+	smbios_build_type_7_table(1,"L1 Cache",0x180,cores_per_socket*0x20,0x4,0x3,0x7); //AICodo added L1 instruction cache, 32KB per core
+	smbios_build_type_7_table(2,"L2 Cache",0x181,cores_per_socket*0x200,0x5,0x5,0x8); //AICodo added L2 unified cache, 512KB per core
+	smbios_build_type_7_table(3,"L3 Cache",0x182,0x4000,0x6,0x5,0x8); //AICodo added L3 unified cache, 16MB
 	
     smbios_build_type_8_table();
     smbios_build_type_9_table(errp);
@@ -1339,13 +1339,13 @@ static bool smbios_get_tables_ep(MachineState *ms,
         smbios_build_type_17_table(i, GET_DIMM_SZ);
     }
 
-    for (i = 0; i < dimm_cnt; i++) {//AICodo modify mem_array_size改为dimm_cnt，减少type19 出现次数
+    for (i = 0; i < dimm_cnt; i++) {//AICodo modify changed mem_array_size to dimm_cnt to reduce type19 table count
         smbios_build_type_19_table(i, offset, mem_array[i].address,
-                                   GET_DIMM_SZ);//AICodo modify mem_array[i].length改为GET_DIMM_SZ做单条处理，我这里也只想最大内存16G就单条
+                                   GET_DIMM_SZ);//AICodo modify changed mem_array[i].length to GET_DIMM_SZ for single-DIMM handling (targeting max 16GB single stick)
 		smbios_build_type_20_table(mem_array[i].address,
-                                   GET_DIMM_SZ);//AICodo added 生成内存设备映射地址信息 我这里也只想最大内存16G就单条
+                                   GET_DIMM_SZ);//AICodo added generate memory device mapped address info (targeting max 16GB single stick)
     }
-	smbios_build_type_22_table();/* SMBIOS type 22 PortableBattery （这个没有写完） AICodo added*/
+	smbios_build_type_22_table();/* SMBIOS type 22 PortableBattery (incomplete) AICodo added*/
     /*
      * make sure 16 bit handle numbers in the headers of tables 19
      * and 32 do not overlap.
@@ -1354,18 +1354,18 @@ static bool smbios_get_tables_ep(MachineState *ms,
 
 	//AICodo added VoltageProbe 
 	//(unsigned instance,const char *description,uint8_t location_and_status)t->location_and_status=0x6A; 
-	//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf 请使用这个规范文件System Management BIOS (SMBIOS) Reference Specification设置type 26 内部参数信息
+	//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf Refer to SMBIOS Reference Specification for type 26 parameter details
 	smbios_build_type_26_table(0,"LM78A",0x6A);//AICodo added
 	smbios_build_type_26_table(1,"LM78A-1",0x67);//AICodo added
 
 	//AICodo added CoolingDevice 
 	//(unsigned instance,const char *description,uint8_t device_type_and_status) t->device_type_and_status = 0x67; //Power Supply Fan |  Ok   0x67=b01100111
-	//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf 请使用这个规范文件System Management BIOS (SMBIOS) Reference Specification设置type 27 内部参数信息
+	//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf Refer to SMBIOS Reference Specification for type 27 parameter details
 	smbios_build_type_27_table(0,"CPU FAN",0x67);//AICodo added
 
 	//AICodo added TemperatureProbe 
 	//unsigned instance,const char *description,uint8_t location_and_status) t->location_and_status=0x6A;
-	//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf 请使用这个规范文件System Management BIOS (SMBIOS) Reference Specification设置type 28 内部参数信息
+	//https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.8.0WIP50.pdf Refer to SMBIOS Reference Specification for type 28 parameter details
 	smbios_build_type_28_table(0,"LM78A",0x63);//AICodo added 0x3=cpu
 	smbios_build_type_28_table(1,"LM78A-1",0x67);//AICodo added 0x7=motherboard
 	smbios_build_type_29_table();//AICodo added ElectricalCurrentProbe
